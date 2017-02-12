@@ -3,6 +3,7 @@
 <?css-conversion no?>
 <html 
 	xmlns="http://www.w3.org/1999/xhtml" 
+	xmlns:s="tag:conaltuohy.com,2017:xforms-serialization"
 	xmlns:ev="http://www.w3.org/2001/xml-events" 
 	xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -31,14 +32,6 @@
 		}
           </style>
 		<xf:model>
-		
-			<!--<xf:instance name="all" src="http://www.tei-c.org/release/xml/tei/custom/odd/tei_all.odd"/>-->
-          	
-			<!-- track changes to the user's ODD so we can warn them against overwriting it -->
-			<xf:instance name="odd-state">
-				<state>unmodified</state>
-			</xf:instance>
-
 			<!-- the list of external ODD templates -->
 			<xf:instance id="templates">
 				<ul xml:base="http://www.tei-c.org/release/xml/tei/custom/odd/">
@@ -85,10 +78,22 @@
 					</text>
 				</TEI>
 			</xf:instance>
+			<xf:instance id="conversion-request" xmlns="">
+				<!-- used for OxGarage conversions -->
+				<ege-webservice-call>
+					<input/>
+					<filename>file</filename>
+				</ege-webservice-call>
+			</xf:instance>
 			<xf:instance id="uploaded-odd" xmlns="">
 				<ege-webservice-call>
 					<fileToConvert xsi:type="xsd:anyURI"/>
 				</ege-webservice-call>
+			</xf:instance>
+			<xf:instance id="http-response" xmlns="">
+				<http-response>
+					<response-headers/>
+				</http-response>
 			</xf:instance>
 			<xf:submission
 				id="upload-user-odd" 
@@ -99,23 +104,36 @@
 				instance="odd"
 				omit-xml-declaration="true"
 			>
-				<!--
-				<xf:header combine="replace">
-					<xf:name>Accept</xf:name>
-					<xf:value>application/xml, text/xml</xf:value>
-				</xf:header>
-				-->
+				<!-- need to store the "event('response-headers')" data in an instance in order to parse it (TODO document limitation -->
+				<xf:insert ev:event="xforms-submit-done"
+					context="instance('http-response')/response-headers"
+					nodeset="*"
+					origin="event('response-headers')"/>
+				<xf:setvalue ev:event="xforms-submit-done" 
+					ref="instance('conversion-request')/filename" 
+					value="
+						choose(
+							instance('http-response')/response-headers/header[name='Content-Disposition']/value,
+							normalize-space(
+								replace(
+									instance('http-response')/response-headers/header[name='Content-Disposition']/value,
+									'attachment; filename=&quot;([^&quot;]+)&quot;',
+									'$1'
+								)
+							),
+							'myODD'
+						)
+					"							
+				/>
 			</xf:submission>
-			<!--
 			<xf:submission
-				id="upload-user-odd" 
-				resource="http://www.tei-c.org/ege-webservice/Conversions/TEI%3Atext%3Axml/xml%3Aapplication%3Axml/conversion"
-				method="post" 
-				ref="instance('uploaded-odd')/fileToConvert"
-				replace="instance"
-				instance="odd"
+				id="request-relaxng-schema" 
+				resource="http://www.tei-c.org/ege-webservice/Conversions/ODD%3Atext%3Axml/ODDC%3Atext%3Axml/relaxng%3Aapplication%3Axml-relaxng/"
+				method="urlencoded-post" 
+				ref="instance('conversion-request')"
+				replace="all"
+				show="download"
 			/>
-			-->
 		</xf:model>
 	</head>
 	<body>
@@ -127,21 +145,26 @@
 		<xf:submit submission="upload-user-odd">
 			<xf:label>Upload ODD</xf:label>
 		</xf:submit>
-				<!--
+		<xf:submit submission="request-relaxng-schema">
+			<xf:label>Get RelaxNG schema</xf:label>
+		</xf:submit>
+
 		<xf:trigger>
-			<xf:label>Load</xf:label>
-			<xf:action ev:event="DOMActivate">
-				<xf:insert origin="instance('source')" nodeset="instance('destination')"/>
-			</xf:action>
-		</xf:trigger>
-				-->
-		<!-- removed  mediatype="application/xml" from xf:upload trying to work around Chrome error:
-		XMLHttpRequest cannot load http://www.tei-c.org/ege-webservice/Conversions/TEI%3Atext%3Axml/xml%3Aapplication%3Axml/conversion. Request header field Content-Type is not allowed by Access-Control-Allow-Headers in preflight response.
-		-->
+			<xf:label>(preload) Get RelaxNG schema</xf:label>
+			<xf:setvalue ev:event="DOMActivate"  ref="instance('conversion-request')/input" value="serialize(instance('odd'))"/>
+		</xf:trigger>		
+		
 		<xf:upload ref="instance('uploaded-odd')/fileToConvert" mediatype="application/xml">
-			<label>Upload existing ODD</label>
-			
+			<xf:label>Upload existing ODD</xf:label>	
 		</xf:upload>
+		<xf:output value="serialize(instance('conversion-request')/input/*)">
+			<xf:label>request: </xf:label>
+		</xf:output>
+		<xf:output value="instance('conversion-request')/filename">
+			<xf:label>filename: </xf:label>
+		</xf:output>
+		
+
 	
 	</body>
 </html>
