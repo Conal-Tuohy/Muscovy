@@ -17,4 +17,26 @@ Muscovy is constrained by browser security settings. Because the TEI Consortium'
 | Access-Control-Allow-Origin   | *                    |
 | Access-Control-Expose-Headers | Content-Disposition  |
 
-Click the green "Save All" button.
+Click the green "Save All" button. Or click the "Import/Export" link and save the following settings:
+
+```json
+[
+    {
+        "URL": "http://www.tei-c.org/ege-webservice/*",
+        "headers": [
+            {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+            },
+            {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+            },
+            {
+                "name": "Access-Control-Expose-Headers",
+                "value": "Content-Disposition"
+            }
+        ]
+    }
+]
+```
