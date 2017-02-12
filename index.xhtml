@@ -142,29 +142,22 @@
 			<h2>TEI Schema Editor</h2>
 		</div>
 
-		<xf:submit submission="upload-user-odd">
-			<xf:label>Upload ODD</xf:label>
-		</xf:submit>
-		<xf:submit submission="request-relaxng-schema">
-			<xf:label>Get RelaxNG schema</xf:label>
-		</xf:submit>
+		<xf:upload ref="instance('uploaded-odd')/fileToConvert" mediatype="application/xml" incremental="true">
+			<xf:label>Upload existing ODD</xf:label>
+			<!-- TODO xsltforms bug: DOMActivate event occurs upon clicking the upload button, but not after file selection is made.
+			"See https://www.w3.org/TR/xforms11/#sequence-for-input for details:
+			When the user activates the control and the value has changed, then, after the new value is placed into the bound instance node, the event sequence consists of the events described at 4.6.7 Sequence: Value Change followed by dispatching the DOMActivate event"
+			-->
+			<xf:send ev:event="xforms-value-changed" submission="upload-user-odd"/>
+		</xf:upload>
 
 		<xf:trigger>
-			<xf:label>(preload) Get RelaxNG schema</xf:label>
-			<xf:setvalue ev:event="DOMActivate"  ref="instance('conversion-request')/input" value="serialize(instance('odd'))"/>
+			<xf:label>Get RelaxNG schema</xf:label>
+			<!-- set up the OxGarage conversion request: serialize the ODD into OxGarage's "input" parameter -->
+			<xf:setvalue ev:event="DOMActivate" ref="instance('conversion-request')/input" value="serialize(instance('odd'))"/>
+			<!-- issue the request to OxGarage -->
+			 <xf:send ev:event="DOMActivate" submission="request-relaxng-schema"/>
 		</xf:trigger>		
 		
-		<xf:upload ref="instance('uploaded-odd')/fileToConvert" mediatype="application/xml">
-			<xf:label>Upload existing ODD</xf:label>	
-		</xf:upload>
-		<xf:output value="serialize(instance('conversion-request')/input/*)">
-			<xf:label>request: </xf:label>
-		</xf:output>
-		<xf:output value="instance('conversion-request')/filename">
-			<xf:label>filename: </xf:label>
-		</xf:output>
-		
-
-	
 	</body>
 </html>
