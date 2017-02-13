@@ -149,6 +149,14 @@
 				replace="all"
 				show="download"
 			/>
+			<xf:submission
+				id="save-odd" 
+				resource="http://www.tei-c.org/ege-webservice/Conversions/TEI%3Atext%3Axml/xml%3Aapplication%3Axml/"
+				method="urlencoded-post" 
+				ref="instance('conversion-request')"
+				replace="all"
+				show="download"
+			/>
 		</xf:model>
 	</head>
 	<body>
@@ -174,5 +182,12 @@
 			 <xf:send ev:event="DOMActivate" submission="request-relaxng-schema"/>
 		</xf:trigger>		
 		
+		<xf:trigger>
+			<xf:label>Save ODD</xf:label>
+			<!-- set up the OxGarage conversion request: serialize the ODD into OxGarage's "input" parameter -->
+			<xf:setvalue ev:event="DOMActivate" ref="instance('conversion-request')/input" value="serialize(instance('odd'))"/>
+			<!-- issue the request to OxGarage -->
+			 <xf:send ev:event="DOMActivate" submission="save-odd"/>
+		</xf:trigger>				
 	</body>
 </html>
