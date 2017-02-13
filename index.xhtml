@@ -43,6 +43,10 @@
 					</li>
 				</ul>
 			</xf:instance>
+			
+			<xf:instance id="compiled-odd">
+				<dummy/>
+			</xf:instance>
 
 			<!-- the user's ODD -->
 			<xf:instance id="odd">
@@ -104,7 +108,7 @@
 				instance="odd"
 				omit-xml-declaration="true"
 			>
-				<!-- need to store the "event('response-headers')" data in an instance in order to parse it (TODO document limitation -->
+				<!-- need to store the "event('response-headers')" data in an instance in order to parse it (TODO document this xsltforms limitation) -->
 				<xf:insert ev:event="xforms-submit-done"
 					context="instance('http-response')/response-headers"
 					nodeset="*"
@@ -125,7 +129,18 @@
 						)
 					"							
 				/>
+				
+				<xf:setvalue ev:event="xforms-submit-done" ref="instance('conversion-request')/input" value="serialize(instance('odd'))"/>
+				<xf:send ev:event="xforms-submit-done" submission="compile-odd"/>
 			</xf:submission>
+			<xf:submission
+				id="compile-odd"
+				resource="http://www.tei-c.org/ege-webservice/Conversions/ODD%3Atext%3Axml/ODDC%3Atext%3Axml/"
+				method="urlencoded-post"
+				ref="instance('conversion-request')"
+				replace="instance"
+				instance="compiled-odd"
+			/>
 			<xf:submission
 				id="request-relaxng-schema" 
 				resource="http://www.tei-c.org/ege-webservice/Conversions/ODD%3Atext%3Axml/ODDC%3Atext%3Axml/relaxng%3Aapplication%3Axml-relaxng/"
