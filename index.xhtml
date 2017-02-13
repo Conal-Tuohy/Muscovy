@@ -3,6 +3,7 @@
 <?css-conversion no?>
 <html 
 	xmlns="http://www.w3.org/1999/xhtml" 
+	xmlns:tei="http://www.tei-c.org/ns/1.0"
 	xmlns:s="tag:conaltuohy.com,2017:xforms-serialization"
 	xmlns:ev="http://www.w3.org/2001/xml-events" 
 	xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
@@ -32,7 +33,25 @@
 		}
           </style>
 		<xf:model>
+			<!-- TEI P5 -->
+			<!-- 
+			BUG: @src here does not work; attempts to load data as JSON-P, but of course it's XML so it doesn't parse as JSON  
+			<xf:instance id="p5-subset" src="http://www.tei-c.org/release/xml/tei/odd/p5subset.xml"/>
+			-->
+			<!-- the following, which should be equivalent, does work, by simply performing a GET and relying on CORS --> 
+			<xf:send ev:event="xforms-model-construct-done" submission="load-p5-subset"/>
+			<xf:submission id="load-p5-subset"
+				resource="http://www.tei-c.org/release/xml/tei/odd/p5subset.xml"
+				method="get" 
+				replace="instance"
+				instance="p5-subset"
+			/>
+			<xf:instance id="p5-subset" xmlns="">
+				<dummy/>
+			</xf:instance>
+			
 			<!-- the list of external ODD templates -->
+			<!-- TODO provide a list of ODDs as starting points 
 			<xf:instance id="templates">
 				<ul xml:base="http://www.tei-c.org/release/xml/tei/custom/odd/">
 					<li>
@@ -43,6 +62,7 @@
 					</li>
 				</ul>
 			</xf:instance>
+			-->
 			
 			<xf:instance id="compiled-odd">
 				<dummy/>
@@ -188,6 +208,15 @@
 			<xf:setvalue ev:event="DOMActivate" ref="instance('conversion-request')/input" value="serialize(instance('odd'))"/>
 			<!-- issue the request to OxGarage -->
 			 <xf:send ev:event="DOMActivate" submission="save-odd"/>
-		</xf:trigger>				
+		</xf:trigger>	
+		
+		<xf:output id="p5-version" ref="instance('p5-subset')/tei:teiHeader/tei:fileDesc/tei:editionStmt">
+			<xf:label>P5 version: </xf:label>
+		</xf:output>
+		<xf:repeat id="module" nodeset="instance('p5-subset')/tei:text/tei:body/tei:div/tei:div/tei:moduleSpec">
+			<xf:output value="tei:altIdent">
+				<xf:label>Module: </xf:label>
+			</xf:output>
+		</xf:repeat>
 	</body>
 </html>
