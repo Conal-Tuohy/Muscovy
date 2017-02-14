@@ -33,6 +33,9 @@
 		}
           </style>
 		<xf:model>
+			<xf:instance id="current-module" xmlns="">
+				<current-module/>
+			</xf:instance>
 			<!-- TEI P5 -->
 			<!-- 
 			BUG: @src here does not work; attempts to load data as JSON-P, but of course it's XML so it doesn't parse as JSON  
@@ -45,9 +48,19 @@
 				method="get" 
 				replace="instance"
 				instance="p5-subset"
-			/>
+			>
+				<xf:insert id="list-modules" 
+					ev:event="xforms-submit-done"
+					origin="instance('p5-subset')/tei:text/tei:body/tei:div/tei:div/tei:moduleSpec"
+					context="instance('modules')"
+				/>
+			</xf:submission>
 			<xf:instance id="p5-subset" xmlns="">
 				<dummy/>
+			</xf:instance>
+			
+			<xf:instance id="modules" xmlns="">
+				<modules/>
 			</xf:instance>
 			
 			<!-- the list of external ODD templates -->
@@ -211,12 +224,20 @@
 		</xf:trigger>	
 		
 		<xf:output id="p5-version" ref="instance('p5-subset')/tei:teiHeader/tei:fileDesc/tei:editionStmt">
-			<xf:label>P5 version: </xf:label>
+			<xf:label>TEI version: </xf:label>
 		</xf:output>
-		<xf:repeat id="module" nodeset="instance('p5-subset')/tei:text/tei:body/tei:div/tei:div/tei:moduleSpec">
+		<xf:repeat id="module" nodeset="instance('modules')/tei:moduleSpec">
+			<xf:trigger ref=".">
+				<xf:label><xf:output ref="tei:altIdent"/></xf:label>
+			</xf:trigger>
+			<xf:action ev:event="DOMActivate">
+				<xf:setvalue ref="instance('current-module')" value="instance('modules')/tei:moduleSpec[index('module')]/@ident"/>
+			</xf:action>
+		</xf:repeat>
+		<xf:group id="module-pane" ref="instance('modules')/tei:moduleSpec[@ident = string(instance('current-module'))]">
 			<xf:output value="tei:altIdent">
 				<xf:label>Module: </xf:label>
 			</xf:output>
-		</xf:repeat>
+		</xf:group>
 	</body>
 </html>
